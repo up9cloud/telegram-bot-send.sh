@@ -17,26 +17,26 @@ Usage:
 Message can be from STDIN, argument, or --message.
 
 Examples:
-	TELEGRAM_BOT_TOKEN=123:xxx TELEGRAM_CHAT_ID=23456 ${0} -I @abc -m helloworld
-	${0} -T 123:xxx -I @abc -p code < ./test/foo.sh
-	                        -p md < ./test/foo.md
-	                        -f ./test/foo.jpg -t photo My photo
-	                        -f ./test/foo.mp3 -t audio My audio
-	                        -f ./test/foo.md -t document My document
-	                        -f ./test/foo.mp4 -t video My video
-	                        -f ./test/foo.gif -t animation My animation
-	                        -f ./test/foo.ogg -t voice My voice
-	                        -f ./test/foo.mp4 -t video_note My video_note
-	                        -f ./test/foo.webp -t sticker My sticket
-	                        -x location -o latitude=25.033713 -o longitude=121.564928
-	                        -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o address=taipei
-	                        -x contact -o "phone_number=(212) 580-2000" -o "first_name=Eva"
-	                        -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
-	                        -x dice
-	                        -x chat_action -o action=typing
-	                        -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
-	                        --method getMe
-	                        -X random_dice
+	TELEGRAM_BOT_TOKEN=123:xxxx TELEGRAM_CHAT_ID=321 $(basename $0) -I @abc -m helloworld
+	-T 123:xxxx -I @abc -p code < ./test/foo.sh
+	                    -p md < ./test/foo.md
+	                    -f ./test/foo.jpg -t photo My photo
+	                    -f ./test/foo.mp3 -t audio My audio
+	                    -f ./test/foo.md -t document My document
+	                    -f ./test/foo.mp4 -t video My video
+	                    -f ./test/foo.gif -t animation My animation
+	                    -f ./test/foo.ogg -t voice My voice
+	                    -f ./test/foo.mp4 -t video_note My video_note
+	                    -f ./test/foo.webp -t sticker My sticket
+	                    -x location -o latitude=25.033713 -o longitude=121.564928
+	                    -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o address=taipei
+	                    -x contact -o "phone_number=(212) 580-2000" -o "first_name=Eva"
+	                    -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
+	                    -x dice
+	                    -x chat_action -o action=typing
+	                    -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
+	                    --method getMe
+	                    -X random_dice
 
 ENV:
 	TELEGRAM_BOT_TOKEN      Bot token, from: @BotFather -> /newbot or /mybots -> ...
@@ -60,7 +60,7 @@ Options:
 	                        video_note: mp4, <1 mins
 	                        sticker: WEBP or animated .TGS stickers
 	   --thumb=             Send file's thumb, only works with file type: audio, document, video, animation, video_note
-		 --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
+	   --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
 	-p,--parse-mode=        Should be one of:
 	                        '': Default, not set, plain text
 	                        md: MarkdownV2
@@ -73,8 +73,7 @@ Options:
 	                        poll: -o question= -o options=
 	                        dice: [-o emoji=]
 	                        chat_action: -o action=
-	                        invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices=
-	                          (provider_token is from: @BotFather -> /mybots -> payments -> ...)
+	                        invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (provider_token is from: @BotFather -> /mybots -> payments -> ...)
 	   --method=            Specify api method, e.q. getUpdates
 	   --curl-form=         Set more argument via 'curl --form' for api
 	-o,--curl-form-string=  Set more argument via 'curl --form-string' for api, e.q.:
@@ -82,7 +81,7 @@ Options:
 	                        -o "disable_web_page_preview=true"
 	                        See more at https://core.telegram.org/bots/api#available-methods
 	   --curl-args=         Set default curl arguments, default is "-s"
-  -X,--execute=           Execute built in functions, should be one of:
+	-X,--execute=           Execute built in functions, should be one of:
 	                        list_chat_ids: list recently chat ids via api /getUpdates
 	                        list_dice_emoji: show list of emojis
 	                        random_dice: -x=dice by random emoji
