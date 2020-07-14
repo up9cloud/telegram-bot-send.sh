@@ -145,9 +145,9 @@ function action_handle() {
 	esac
 
 	if [ "$DRY_RUN" = true ]; then
-		echo "Expect command: $cmd"
+		echo "Run command: $cmd"
 		if [ -n "$jq_args" ]; then
-			echo "Expect jq filter: $jq_args"
+			echo "Run jq filter: $jq_args"
 		fi
 		exit 0
 	fi
@@ -479,7 +479,7 @@ for chat_id in $CHAT_IDS; do
 	cmd=$(printf 'curl %s %s --form-string "chat_id=%s" %s' "$CURL_DEFAULT_ARGS" "$CURL_ARGS" "$chat_id" "$API_BASE_URL/bot$BOT_TOKEN/$api_method")
 
 	if [ "$DRY_RUN" = true ]; then
-		echo "Executing command: $cmd"
+		echo "Run command: $cmd"
 		exit 0
 	fi
 
