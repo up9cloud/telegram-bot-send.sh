@@ -90,8 +90,15 @@ Options:
 	-h,--help               Display this help.
 	-V,--version            Display version.
 	-v,--verbose            Display verbose logs. If you want more verbose at curl, do --curl-args "--trace-ascii -".
+	-q,--quiet              Hide success response.
 	-n,--dry-run            Dry run, don't actually call the api, only print the curl command.
 EOL
+}
+
+function say() {
+	if [ "$QUIET" != true ]; then
+		printf '%s\n' "$@"
+	fi
 }
 
 function log() {
@@ -144,9 +151,9 @@ function action_handle() {
 	esac
 
 	if [ "$DRY_RUN" = true ]; then
-		echo "Run command: $cmd"
+		say "Run command: $cmd"
 		if [ -n "$jq_args" ]; then
-			echo "Run jq filter: $jq_args"
+			say "Run jq filter: $jq_args"
 		fi
 		exit 0
 	fi
@@ -169,7 +176,7 @@ function action_handle() {
 			die "Failed to parse telegram response: $response"
 		}
 	else
-		echo "$response"
+		say "$response"
 	fi
 
 	exit 0
@@ -215,8 +222,8 @@ CURL_ARGS=""
 
 check_deps
 
-SHORT_OPTSTRING=hVvnT:I:m:f:t:p:x:o:X:
-LONG_OPTSTRING=help,version,verbose,dry-run,bot-token:,chat-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
+SHORT_OPTSTRING=hVvqnT:I:m:f:t:p:x:o:X:
+LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
 O=$(getopt -o "${SHORT_OPTSTRING}" -l "${LONG_OPTSTRING}" -- "$@") || exit 1
 eval set -- "$O"
 while true; do
@@ -232,6 +239,11 @@ while true; do
 	-v | --verbose)
 		VERBOSE=true
 		log "Set VERBOSE=true"
+		shift
+		;;
+	-q | --quiet)
+		QUIET=true
+		log "Set QUIET=true"
 		shift
 		;;
 	-n | --dry-run)
@@ -478,7 +490,7 @@ for chat_id in $CHAT_IDS; do
 	cmd=$(printf 'curl %s %s --form-string "chat_id=%s" %s' "$CURL_DEFAULT_ARGS" "$CURL_ARGS" "$chat_id" "$API_BASE_URL/bot$BOT_TOKEN/$api_method")
 
 	if [ "$DRY_RUN" = true ]; then
-		echo "Run command: $cmd"
+		say "Run command: $cmd"
 		exit 0
 	fi
 
@@ -494,6 +506,6 @@ for chat_id in $CHAT_IDS; do
 		die "Telegram bot api response error: $response"
 	fi
 
-	echo "$response"
+	say "$response"
 
 done
