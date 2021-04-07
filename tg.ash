@@ -11,82 +11,85 @@ function show_help() {
 Issues: https://github.com/up9cloud/telegram-bot-send.sh/issues
 
 Usage:
+	${0} [options]
 	${0} [options] [message]
 	${0} [options] < [message file]
 
-Message can be from STDIN, argument, or --message.
-
 Examples:
-	TELEGRAM_BOT_TOKEN=123:xxxx TELEGRAM_CHAT_ID=321 $(basename $0) -I @abc -m helloworld
-	-T 123:xxxx -I @abc -p code < ./test/foo.sh
-	                    -p md < ./test/foo.md
-	                    -f ./test/foo.jpg -t photo My photo
-	                    -f ./test/foo.mp3 -t audio My audio
-	                    -f ./test/foo.md -t document My document
-	                    -f ./test/foo.mp4 -t video My video
-	                    -f ./test/foo.gif -t animation My animation
-	                    -f ./test/foo.ogg -t voice My voice
-	                    -f ./test/foo.mp4 -t video_note My video_note
-	                    -f ./test/foo.webp -t sticker My sticket
-	                    -x location -o latitude=25.033713 -o longitude=121.564928
-	                    -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o address=taipei
-	                    -x contact -o "phone_number=(212) 580-2000" -o "first_name=Eva"
-	                    -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
-	                    -x dice
-	                    -x chat_action -o action=typing
-	                    -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
-	                    --method getMe
-	                    -X random_dice
+	TELEGRAM_BOT_TOKEN=123:xxxx TELEGRAM_CHAT_ID=321 $(basename $0) helloworld
+	$(basename $0) -T 123:xxxx -I @abc -m helloworld
+	... -p code < ./test/foo.sh
+	    -p md < ./test/foo.md
+	    -f ./test/foo.jpg -t photo My photo
+	    -f ./test/foo.mp3 -t audio My audio
+	    -f ./test/foo.md -t document My document
+	    -f ./test/foo.mp4 -t video My video
+	    -f ./test/foo.gif -t animation My animation
+	    -f ./test/foo.ogg -t voice My voice
+	    -f ./test/foo.mp4 -t video_note My video_note
+	    -f ./test/foo.webp -t sticker My sticket
+	    -x location -o latitude=25.033713 -o longitude=121.564928
+	    -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o address=taipei
+	    -x contact -o "phone_number=(212) 580-2000" -o "first_name=Eva"
+	    -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
+	    -x dice
+	    -x chat_action -o action=typing
+	    -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
+	    --method getMe
+	    -X random_dice
 
 ENV:
-	TELEGRAM_BOT_TOKEN      Bot token, from: @BotFather -> /newbot or /mybots -> ...
-	TELEGRAM_CHAT_ID        Chat id, from: 1. on telegram, send a message to the bot.
-	                                       2. '-X list_chat_ids' to get bot recently chat ids.
-	                                       3. find yourself and copy the id.
+	TELEGRAM_BOT_TOKEN      Bot token, get it by steps:
+	                          - On telegram, call @BotFather
+	                          - Execute /newbot or /mybots to find out
+	TELEGRAM_CHAT_ID        Chat id, get it by steps:
+	                          - On telegram, send a message to the bot.
+	                          - '-X list_chat_ids' to get bot recently chat ids.
+	                          - find yourself and copy the id.
 
 Options:
 	-T,--bot-token=         Bot token. This will overwrite TELEGRAM_BOT_TOKEN.
-	-I,--chat-id=           Chat id for the target chat or username of the target channel, can be set more than once. This will merge TELEGRAM_CHAT_ID.
-	-m,--message=           The message. If --file provided, the message would be media caption.
+	-I,--chat-id=           Chat id for the person or @username for the channel, can be multiple (-I ... -I ...). This will merge TELEGRAM_CHAT_ID.
+	-m,--message=           The message, could also be from STDIN, last argument. If --file provided, the message would be media caption.
 	-f,--file=              Send file. (Must also specify --file-type)
 	   --file-id=           Send file by the id existing on telegram server, this will overwrite --file. (Must also specify --file-type)
 	-t,--file-type=         Shoude be one of:
-	                        photo: <10MB
-	                        audio: .mp3, .m4a, <50MB
-	                        document: <50MB
-	                        video:  .mp4, <50MB
-	                        animation: GIF or H.264/MPEG-4 AVC video without sound, <50MB
-	                        voice: OGG file encoded with OPUS, <50MB
-	                        video_note: mp4, <1 mins
-	                        sticker: WEBP or animated .TGS stickers
+	                          photo: <10MB
+	                          audio: .mp3, .m4a, <50MB
+	                          document: <50MB
+	                          video:  .mp4, <50MB
+	                          animation: GIF or H.264/MPEG-4 AVC video without sound, <50MB
+	                          voice: OGG file encoded with OPUS, <50MB
+	                          video_note: mp4, <1 mins
+	                          sticker: WEBP or animated .TGS stickers
 	   --thumb=             Send file's thumb, only works with file type: audio, document, video, animation, video_note
 	   --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
 	-p,--parse-mode=        Should be one of:
-	                        '': Default, not set, plain text
-	                        md: MarkdownV2
-	                        html: HTML
-	                        code: Add '\`\`\`' wrapping message string, and with md mode
+	                          '': Default, not set, plain text
+	                          md: MarkdownV2
+	                          html: HTML
+	                          code: Add '\`\`\`' wrapping message string, and with md mode
 	-x,--send-method=       Specify other send method, might need provide more -o argument, should be one of:
-	                        location: -o latitude= -o longitude=
-	                        venue: -o latitude= -o longitude= -o title= -o address=
-	                        contact: -o phone_number= -o first_name=
-	                        poll: -o question= -o options=
-	                        dice: [-o emoji=]
-	                        chat_action: -o action=
-	                        invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (provider_token is from: @BotFather -> /mybots -> payments -> ...)
+	                          location: -o latitude= -o longitude=
+	                          venue: -o latitude= -o longitude= -o title= -o address=
+	                          contact: -o phone_number= -o first_name=
+	                          poll: -o question= -o options=
+	                          dice: [-o emoji=]
+	                          chat_action: -o action=
+	                          invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (provider_token is from @BotFather -> /mybots -> payments -> ...)
 	   --method=            Specify api method, e.q. getUpdates
 	   --curl-form=         Set more argument via 'curl --form' for api
 	-o,--curl-form-string=  Set more argument via 'curl --form-string' for api, e.q.:
-	                        -o "disable_notification=true"
-	                        -o "disable_web_page_preview=true"
+	                          -o "disable_notification=true"
+	                          -o "disable_web_page_preview=true"
 	                        See more at https://core.telegram.org/bots/api#available-methods
 	   --curl-args=         Set default curl arguments, default is "-s"
 	-X,--execute=           Execute built in functions, should be one of:
-	                        list_chat_ids: list recently chat ids via api /getUpdates
-	                        list_dice_emoji: show list of emojis
-	                        random_dice: -x=dice by random emoji
-	                        liet_chat_action: show list of actions of chat_action
-	                        random_chat_action: -x=chat_action by random action
+	                          list_chat_ids: list recently chat ids via api /getUpdates
+	                          list_dice_emoji: show list of emojis
+	                          random_dice: -x=dice by random emoji
+	                          liet_chat_action: show list of actions of chat_action
+	                          random_chat_action: -x=chat_action by random action
 	-h,--help               Display this help.
 	-V,--version            Display version.
 	-v,--verbose            Display verbose logs. If you want more verbose at curl, do --curl-args "--trace-ascii -".

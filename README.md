@@ -1,23 +1,36 @@
 # telegram-bot-send.sh
 
-A telegram bot cli, only handle send methods, for notify things.
+A telegram bot cli, only handle send* methods, for notification purpose.
 
-Works with [busybox](https://www.busybox.net/).
+Dependencies:
+
+- [busybox](https://busybox.net/downloads/BusyBox.html)
+  - [ash]
+  - [cat]
+  - [getopt]
+- curl
+- jq
+
+## Installation
+
+```console
+~$ docker run --rm -it alpine /bin/sh
+/ # apk add --no-cache curl jq
+/ # curl https://raw.githubusercontent.com/up9cloud/telegram-bot-send.sh/master/tg.ash -O /usr/local/bin/tg
+/ # chmod +x /usr/local/bin/tg
+/ # tg -h
+```
 
 ## Usage
 
 ```sh
-TELEGRAM_BOT_TOKEN=<bot token>
-TELEGRAM_CHAT_ID=<chat id>
-./tg.ash -h
+tg -h
 ```
 
 ```sh
-docker run --rm \
-  -e TELEGRAM_BOT_TOKEN=<bot token> \
-  -e TELEGRAM_CHAT_ID=<chat id>
-  sstc/telegram-bot-send.sh \
-  --help
+TELEGRAM_BOT_TOKEN=<bot token>
+TELEGRAM_CHAT_ID=<chat id>
+tg -m "hello world"
 ```
 
 ## TODO
