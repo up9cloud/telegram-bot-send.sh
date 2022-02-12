@@ -16,6 +16,6 @@ jobs:
           await github.rest.actions.createWorkflowDispatch({
             owner: 'docker-sstc',
             repo: 'docker-notify',
-            workflow_id: 'workflows/main.yaml',
+            workflow_id: 'main.yaml',
             ref: 'master'
           })
