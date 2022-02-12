@@ -7,7 +7,7 @@ jobs:
     #     curl -u "${{ secrets.PAT_USERNAME}}:${{secrets.PAT_TOKEN}}" \
     #       -H "Accept: application/vnd.github.everest-preview+json" \
     #       -H "Content-Type: application/json" \
-    #       https://api.github.com/repos/docker-sstc/docker-notify/actions/workflows/main.yaml/dispatches \
+    #       https://api.github.com/repos/docker-sstc/docker-notify/actions/workflows/main.yml/dispatches \
     #       --data '{"ref": "master"}'
     - uses: actions/github-script@v6
       with:
@@ -16,6 +16,6 @@ jobs:
           await github.rest.actions.createWorkflowDispatch({
             owner: 'docker-sstc',
             repo: 'docker-notify',
-            workflow_id: 'main.yaml',
+            workflow_id: 'main.yml',
             ref: 'master'
           })
