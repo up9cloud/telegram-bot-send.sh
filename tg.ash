@@ -15,86 +15,77 @@ Usage:
 	${0} [options] [message]
 	${0} [options] < [message file]
 
-Examples:
-	TELEGRAM_BOT_TOKEN=123:xxxx TELEGRAM_CHAT_ID=321 $(basename $0) helloworld
-	$(basename $0) -T 123:xxxx -I @abc -m helloworld
-	... -p code < ./test/foo.sh
-	    -p md < ./test/foo.md
-	    -f ./test/foo.jpg -t photo My photo
-	    -f ./test/foo.mp3 -t audio My audio
-	    -f ./test/foo.md -t document My document
-	    -f ./test/foo.mp4 -t video My video
-	    -f ./test/foo.gif -t animation My animation
-	    -f ./test/foo.ogg -t voice My voice
-	    -f ./test/foo.mp4 -t video_note My video_note
-	    -f ./test/foo.webp -t sticker My sticket
-	    -x location -o latitude=25.033713 -o longitude=121.564928
-	    -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o address=taipei
-	    -x contact -o "phone_number=(212) 580-2000" -o "first_name=Eva"
-	    -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
-	    -x dice
-	    -x chat_action -o action=typing
-	    -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
-	    --method getMe
-	    -X random_dice
-
 ENV:
 	TELEGRAM_BOT_TOKEN      Bot token, get it by steps:
 	                          - On telegram, call @BotFather
 	                          - Execute /newbot or /mybots to find out
 	TELEGRAM_CHAT_ID        Chat id, get it by steps:
 	                          - On telegram, send a message to the bot.
-	                          - '-X list_chat_ids' to get bot recently chat ids.
+	                          - Execute \`tg -X list_chat_ids\` to get recently chat ids.
 	                          - find yourself and copy the id.
 
 Options:
 	-T,--bot-token=         Bot token. This will overwrite TELEGRAM_BOT_TOKEN.
-	-I,--chat-id=           Chat id for the person or @username for the channel, can be multiple (-I ... -I ...). This will merge TELEGRAM_CHAT_ID.
+	-I,--chat-id=           Chat id for the person or @channel_id for the channel, can be multiple times (-I ... -I ...)
+	                        If this is set, the TELEGRAM_CHAT_ID will be ignored.
 	-m,--message=           The message, could also be from STDIN, last argument. If --file provided, the message would be media caption.
 	-f,--file=              Send file. (Must also specify --file-type)
 	   --file-id=           Send file by the id existing on telegram server, this will overwrite --file. (Must also specify --file-type)
-	-t,--file-type=         Shoude be one of:
-	                          photo: <10MB
-	                          audio: .mp3, .m4a, <50MB
-	                          document: <50MB
-	                          video:  .mp4, <50MB
-	                          animation: GIF or H.264/MPEG-4 AVC video without sound, <50MB
-	                          voice: OGG file encoded with OPUS, <50MB
-	                          video_note: mp4, <1 mins
-	                          sticker: WEBP or animated .TGS stickers
+	-t,--file-type=         Shoude be one of: (see limitation at https://core.telegram.org/bots/api#inputfile)
+	                          photo: <10MB (see https://core.telegram.org/bots/api#sendphoto)
+	                          audio: .mp3, .m4a, <50MB (see https://core.telegram.org/bots/api#sendaudio)
+	                          document: <50MB (see https://core.telegram.org/bots/api#senddocument)
+	                          video: .mp4, <50MB (see https://core.telegram.org/bots/api#sendvideo)
+	                          animation: GIF or H.264/MPEG-4 AVC video without sound, <50MB (see https://core.telegram.org/bots/api#sendanimation)
+	                          voice: OGG file encoded with OPUS, <50MB (see https://core.telegram.org/bots/api#sendvoice)
+	                          video_note: mp4, <1 mins (see https://core.telegram.org/bots/api#sendvideonote)
+	                          sticker: WEBP or animated .TGS stickers (see https://core.telegram.org/bots/api#sendsticker)
 	   --thumb=             Send file's thumb, only works with file type: audio, document, video, animation, video_note
 	   --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
-	-p,--parse-mode=        Should be one of:
+	-p,--parse-mode=        Should be one of: (see https://core.telegram.org/bots/api#formatting-options)
 	                          '': Default, not set, plain text
 	                          md: MarkdownV2
 	                          html: HTML
 	                          code: Add '\`\`\`' wrapping message string, and with md mode
-	-x,--send-method=       Specify other send method, might need provide more -o argument, should be one of:
-	                          location: -o latitude= -o longitude=
-	                          venue: -o latitude= -o longitude= -o title= -o address=
-	                          contact: -o phone_number= -o first_name=
-	                          poll: -o question= -o options=
-	                          dice: [-o emoji=]
-	                          chat_action: -o action=
-	                          invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (provider_token is from @BotFather -> /mybots -> payments -> ...)
-	   --method=            Specify api method, e.q. getUpdates
+	-x,--send-method=       Specify other send methods (not message nor file), might need provide more -o argument, should be one of:
+	                          location: -o latitude= -o longitude= (see https://core.telegram.org/bots/api#sendgame)
+	                          venue: -o latitude= -o longitude= -o title= -o address= (see https://core.telegram.org/bots/api#sendvenue)
+	                          contact: -o phone_number= -o first_name= (see https://core.telegram.org/bots/api#sendcontact)
+	                          poll: -o question= -o options= (see https://core.telegram.org/bots/api#sendpoll)
+	                          dice: [-o emoji=] (see https://core.telegram.org/bots/api#senddice)
+	                          chat_action: -o action= (see https://core.telegram.org/bots/api#sendchataction)
+	                          invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (see https://core.telegram.org/bots/api#sendinvoice)
+	                          game: -o game_short_name= (see https://core.telegram.org/bots/api#sendgame)
+	   --method=            Specify telegram api method, e.q. getUpdates, getMe, ...
 	   --curl-form=         Set more argument via 'curl --form' for api
 	-o,--curl-form-string=  Set more argument via 'curl --form-string' for api, e.q.:
 	                          -o "disable_notification=true"
 	                          -o "disable_web_page_preview=true"
-	                        See more at https://core.telegram.org/bots/api#available-methods
+	                          (see more options at https://core.telegram.org/bots/api#available-methods)
 	   --curl-args=         Set default curl arguments, default is "-s"
 	-X,--execute=           Execute built in functions, should be one of:
-	                          list_chat_ids: list recently chat ids via api /getUpdates
+	                          list_deps: list dependencies
+	                          check_deps: check dependencies existing
+	                          list_chat_ids: parse api /getUpdates result and list all valid ids
 	                          list_dice_emoji: show list of emojis
-	                          random_dice: -x=dice by random emoji
-	                          liet_chat_action: show list of actions of chat_action
-	                          random_chat_action: -x=chat_action by random action
+	                          random_dice: -x dice by random emoji
+	                          list_chat_action: show list of actions of chat_action
+	                          random_chat_action: -x chat_action by random action
 	-h,--help               Display this help.
 	-V,--version            Display version.
 	-v,--verbose            Display verbose logs. If you want more verbose at curl, do --curl-args "--trace-ascii -".
 	-q,--quiet              Hide success response.
 	-n,--dry-run            Dry run, don't actually call the api, only print the curl command.
+
+Examples: (see more examples at https://github.com/up9cloud/telegram-bot-send.sh/blob/master/test/cases.sh)
+	TELEGRAM_BOT_TOKEN=123456:xxxxxx TELEGRAM_CHAT_ID=654321
+	$0 "hello world"
+	$0 -T 123456:xxxxxx -I @channel_id -m "hello world"
+	$0 -p md < ./test/foo.md
+	$0 -f ./test/foo.jpg -t photo "My photo"
+	$0 -x location -o latitude=25.033713 -o longitude=121.564928
+	$0 --method getMe
+	$0 -X random_dice
 EOL
 }
 
@@ -125,10 +116,22 @@ function check_dep() {
 	fi
 }
 
+function list_deps() {
+	cat <<EOL
+getopt
+cat
+wc
+awk
+sed
+curl
+jq
+EOL
+}
+
 function check_deps() {
-	check_dep getopt
-	check_dep curl
-	check_dep jq
+	for c in $(list_deps | sed 's/\n/ /g'); do
+		check_dep $c
+	done
 }
 
 function curl_add_form() {
@@ -146,7 +149,7 @@ function action_handle() {
 	case $action in
 	list_chat_ids)
 		cmd=$(printf 'curl %s %s' "$CURL_DEFAULT_ARGS" "$API_BASE_URL/bot$BOT_TOKEN/getUpdates")
-		jq_args='.result | .[].message.chat | "\(.id|tostring) - \(.first_name) \(.last_name) (@\(.username))"'
+		jq_args='.result | .[] | select(.message != null) | .message.chat | "\(.id|tostring) - \(.first_name) \(.last_name) (@\(.username))"'
 		;;
 	*)
 		die "Invalid action: ${action}"
@@ -187,9 +190,12 @@ function action_handle() {
 
 function list_dice_emoji() {
 	cat <<EOL
-🎲
-🎯
-🏀
+🎲	1-6
+🎯	1-6
+🏀	1-5
+⚽	1-5
+🎳	1-6
+🎰	1-64
 EOL
 }
 
@@ -208,27 +214,21 @@ upload_video_note
 EOL
 }
 
-VERSION=1.0.0
+VERSION=1.1.0
 VERBOSE=false
 DRY_RUN=false
 if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
 	BOT_TOKEN=$TELEGRAM_BOT_TOKEN
 fi
-if [ -n "$TELEGRAM_CHAT_ID" ]; then
-	CHAT_IDS=$TELEGRAM_CHAT_ID
-else
-	CHAT_IDS=""
-fi
 API_BASE_URL="https://api.telegram.org"
 CURL_DEFAULT_ARGS="-s"
 CURL_ARGS=""
 
-check_deps
-
+# https://git.busybox.net/busybox/tree/util-linux/getopt.c
 SHORT_OPTSTRING=hVvqnT:I:m:f:t:p:x:o:X:
 LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
-O=$(getopt -o "${SHORT_OPTSTRING}" -l "${LONG_OPTSTRING}" -- "$@") || exit 1
-eval set -- "$O"
+GETOPT=$(getopt -o "${SHORT_OPTSTRING}" -l "${LONG_OPTSTRING}" -- "$@") || exit 1
+eval set -- "$GETOPT"
 while true; do
 	case $1 in
 	-h | --help)
@@ -317,6 +317,9 @@ while true; do
 		invoice)
 			api_method="sendInvoice"
 			;;
+		game)
+			api_method="sendGame"
+			;;
 		*)
 			die "Invalid send method: ${2}"
 			;;
@@ -353,7 +356,7 @@ while true; do
 		;;
 	esac
 done
-log "Formated args: $O"
+log "Formated args: $GETOPT"
 
 if [ -z "$BOT_TOKEN" ]; then
 	die "Must specify bot token. (TELEGRAM_BOT_TOKEN or -t)"
@@ -366,19 +369,19 @@ if [ -n "$EXECUTE_ACTION" ]; then
 		;;
 	random_dice)
 		api_method="sendDice"
-		i=$(shuf -i 1-3 -n 1)
-		emoji=$(list_dice_emoji | sed "${i}q;d")
-		if [ -n "$emoji" ]; then
-			curl_add_form_string "emoji=${emoji}"
-		fi
+		list="$(list_dice_emoji | awk '{ print $1 }')"
+		count=$(echo "$list" | wc -l)
+		i=$(shuf -i 1-${count} -n 1)
+		item=$(echo "$list" | sed "${i}q;d")
+		curl_add_form_string "emoji=${item}"
 		;;
 	random_chat_action)
 		api_method="sendChatAction"
-		i=$(shuf -i 1-10 -n 1)
-		action=$(list_chat_action | sed "${i}q;d")
-		if [ -n "$action" ]; then
-			curl_add_form_string "action=${action}"
-		fi
+		list="$(list_chat_action | awk '{ print $1 }')"
+		count=$(echo "$list" | wc -l)
+		i=$(shuf -i 1-${count} -n 1)
+		item=$(echo "$list" | sed "${i}q;d")
+		curl_add_form_string "action=${item}"
 		;;
 	*)
 		${EXECUTE_ACTION}
@@ -388,7 +391,11 @@ if [ -n "$EXECUTE_ACTION" ]; then
 fi
 
 if [ -z "$CHAT_IDS" ]; then
-	die "Must specify chat id. (TELEGRAM_CHAT_ID, -d)"
+	if [ -n "$TELEGRAM_CHAT_ID" ]; then
+		CHAT_IDS="$TELEGRAM_CHAT_ID"
+	else
+		die "Must specify chat id. (TELEGRAM_CHAT_ID or -I)"
+	fi
 fi
 
 if [ -z "$MESSAGE" ]; then

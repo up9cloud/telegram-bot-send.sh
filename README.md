@@ -5,9 +5,6 @@ A telegram bot cli, only handle send* methods, for notification purpose.
 Dependencies:
 
 - [busybox](https://busybox.net/downloads/BusyBox.html)
-  - [ash]
-  - [cat]
-  - [getopt]
 - curl
 - jq
 
@@ -18,7 +15,7 @@ Dependencies:
 / # apk add --no-cache curl jq
 / # curl https://raw.githubusercontent.com/up9cloud/telegram-bot-send.sh/master/tg.ash -O /usr/local/bin/tg
 / # chmod +x /usr/local/bin/tg
-/ # tg -h
+/ # tg --version
 ```
 
 ## Usage
@@ -30,8 +27,19 @@ tg -h
 ```sh
 TELEGRAM_BOT_TOKEN=<bot token>
 TELEGRAM_CHAT_ID=<chat id>
-tg -m "hello world"
+tg "hello world"
 ```
+
+## Dev memo
+
+- Setup `./config/telegram.org/config.json`
+
+  ```json
+  {
+    "token": "012345678:xxxxxxxxxx",
+    "chat_id": "123456789"
+  }
+  ```
 
 ## TODO
 
