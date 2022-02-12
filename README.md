@@ -1,8 +1,15 @@
 # telegram-bot-send.sh
 
-A telegram bot cli, only handle send* methods, for notification purpose.
+Another telegram bot cli, handling send* methods, for notification purpose.
 
-Dependencies:
+There is [telegram.sh](https://github.com/fabianonline/telegram.sh), but
+
+- It doesn't support busybox
+- It's GPL
+
+That's why I made this
+
+## Dependencies
 
 - [busybox](https://busybox.net/downloads/BusyBox.html)
 - curl
