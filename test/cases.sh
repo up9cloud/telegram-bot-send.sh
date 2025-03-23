@@ -24,6 +24,7 @@ tg -V
 tg "msg by env"
 tg -v "verbose mode"
 tg -T "${TELEGRAM_BOT_TOKEN}" -I "${TELEGRAM_CHAT_ID}" "msg by opt"
+tg --message-thread-id "${TELEGRAM_THREAD_IDS}" "to thread ${TELEGRAM_THREAD_IDS}"
 tg -p md <./test/foo.md
 tg -p code <./test/foo.sh
 

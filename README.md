@@ -44,7 +44,9 @@ tg "hello world"
   ```json
   {
     "token": "012345678:xxxxxxxxxx",
-    "chat_id": "123456789"
+    "chat_id": "123456789",
+    "group_id": "-1234567890",
+    "group_thread_ids": [1,2,3]
   }
   ```
 

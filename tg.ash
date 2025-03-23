@@ -28,6 +28,7 @@ Options:
 	-T,--bot-token=         Bot token. This will overwrite TELEGRAM_BOT_TOKEN.
 	-I,--chat-id=           Chat id for the person or @channel_id for the channel, can be multiple times (-I ... -I ...)
 	                        If this is set, the TELEGRAM_CHAT_ID will be ignored.
+	--message-thread-id     topic thread id
 	-m,--message=           The message, could also be from STDIN, last argument. If --file provided, the message would be media caption.
 	-f,--file=              Send file. (Must also specify --file-type)
 	   --file-id=           Send file by the id existing on telegram server, this will overwrite --file. (Must also specify --file-type)
@@ -226,7 +227,7 @@ CURL_ARGS=""
 
 # https://git.busybox.net/busybox/tree/util-linux/getopt.c
 SHORT_OPTSTRING=hVvqnT:I:m:f:t:p:x:o:X:
-LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
+LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message-thread-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
 GETOPT=$(getopt -o "${SHORT_OPTSTRING}" -l "${LONG_OPTSTRING}" -- "$@") || exit 1
 eval set -- "$GETOPT"
 while true; do
@@ -263,6 +264,14 @@ while true; do
 			CHAT_IDS="$2"
 		else
 			CHAT_IDS="$CHAT_IDS|$2"
+		fi
+		shift 2
+		;;
+	--message-thread-id)
+		if [ -z "$THREAD_IDS" ]; then
+			THREAD_IDS="$2"
+		else
+			THREAD_IDS="$THREAD_IDS|$2"
 		fi
 		shift 2
 		;;
@@ -356,7 +365,7 @@ while true; do
 		;;
 	esac
 done
-log "Formated args: $GETOPT"
+log "Formatted args: $GETOPT"
 
 if [ -z "$BOT_TOKEN" ]; then
 	die "Must specify bot token. (TELEGRAM_BOT_TOKEN or -t)"
@@ -495,17 +504,16 @@ if [ -n "$PARSE_MODE" ]; then
 	esac
 fi
 
-ISF="|"
-for chat_id in $CHAT_IDS; do
-	cmd=$(printf 'curl %s %s --form-string "chat_id=%s" %s' "$CURL_DEFAULT_ARGS" "$CURL_ARGS" "$chat_id" "$API_BASE_URL/bot$BOT_TOKEN/$api_method")
+function send_one() {
+	local cmd="$1"
 
 	if [ "$DRY_RUN" = true ]; then
 		say "Run command: $cmd"
 		exit 0
 	fi
 
-	response=$(printf '%s' "$MESSAGE" | eval $cmd)
-	code=$?
+	local response=$(printf '%s' "$MESSAGE" | eval $cmd)
+	local code=$?
 	log "Command executed: $cmd"
 
 	if [ $code -ne 0 ]; then
@@ -517,5 +525,17 @@ for chat_id in $CHAT_IDS; do
 	fi
 
 	say "$response"
+}
 
+ISF="|"
+for chat_id in ${CHAT_IDS//$ISF/ }; do
+	if [ -n "$THREAD_IDS" ]; then
+		for thread_id in ${THREAD_IDS//$ISF/ }; do
+			cmd=$(printf 'curl %s %s --form-string "chat_id=%s" --form-string "message_thread_id=%s" %s' "$CURL_DEFAULT_ARGS" "$CURL_ARGS" "$chat_id" "$thread_id" "$API_BASE_URL/bot$BOT_TOKEN/$api_method")
+			send_one "$cmd"
+		done
+	else
+		cmd=$(printf 'curl %s %s --form-string "chat_id=%s" %s' "$CURL_DEFAULT_ARGS" "$CURL_ARGS" "$chat_id" "$API_BASE_URL/bot$BOT_TOKEN/$api_method")
+		send_one "$cmd"
+	fi
 done
