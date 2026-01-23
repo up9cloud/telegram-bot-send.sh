@@ -30,9 +30,9 @@ Options:
 	                        If this is set, the TELEGRAM_CHAT_ID will be ignored.
 	--message-thread-id     topic thread id
 	-m,--message=           The message, could also be from STDIN, last argument. If --file provided, the message would be media caption.
-	-f,--file=              Send file. (Must also specify --file-type)
+	-f,--file=              File to send. (If the file extension cannot be auto-detected, you must specify --file-type.)
 	   --file-id=           Send file by the id existing on telegram server, this will overwrite --file. (Must also specify --file-type)
-	-t,--file-type=         Shoude be one of: (see limitation at https://core.telegram.org/bots/api#inputfile)
+	-t,--file-type=         Should be one of: (see limitation at https://core.telegram.org/bots/api#inputfile)
 	                          photo: <10MB (see https://core.telegram.org/bots/api#sendphoto)
 	                          audio: .mp3, .m4a, <50MB (see https://core.telegram.org/bots/api#sendaudio)
 	                          document: <50MB (see https://core.telegram.org/bots/api#senddocument)
@@ -40,7 +40,7 @@ Options:
 	                          animation: GIF or H.264/MPEG-4 AVC video without sound, <50MB (see https://core.telegram.org/bots/api#sendanimation)
 	                          voice: OGG file encoded with OPUS, <50MB (see https://core.telegram.org/bots/api#sendvoice)
 	                          video_note: mp4, <1 mins (see https://core.telegram.org/bots/api#sendvideonote)
-	                          sticker: WEBP or animated .TGS stickers (see https://core.telegram.org/bots/api#sendsticker)
+	                          sticker: .WEBP, .TGS, or .WEBM sticker (see https://core.telegram.org/bots/api#sendsticker)
 	   --thumb=             Send file's thumb, only works with file type: audio, document, video, animation, video_note
 	   --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
 	-p,--parse-mode=        Should be one of: (see https://core.telegram.org/bots/api#formatting-options)
@@ -53,8 +53,11 @@ Options:
 	                          venue: -o latitude= -o longitude= -o title= -o address= (see https://core.telegram.org/bots/api#sendvenue)
 	                          contact: -o phone_number= -o first_name= (see https://core.telegram.org/bots/api#sendcontact)
 	                          poll: -o question= -o options= (see https://core.telegram.org/bots/api#sendpoll)
+	                          checklist: -o business_connection_id= -o checklist= (see https://core.telegram.org/bots/api#sendchecklist)
 	                          dice: [-o emoji=] (see https://core.telegram.org/bots/api#senddice)
+	                          message_draft: -o draft_id= -o text= (see https://core.telegram.org/bots/api#sendmessagedraft)
 	                          chat_action: -o action= (see https://core.telegram.org/bots/api#sendchataction)
+	                          gift: -o gift_id= (see https://core.telegram.org/bots/api#sendgift)
 	                          invoice: -o title= -o description= -o payload= -o provider_token= -o  start_parameter= -o currency= -o prices= (see https://core.telegram.org/bots/api#sendinvoice)
 	                          game: -o game_short_name= (see https://core.telegram.org/bots/api#sendgame)
 	   --method=            Specify telegram api method, e.q. getUpdates, getMe, ...
@@ -202,16 +205,17 @@ EOL
 
 function list_chat_action() {
 	cat <<EOL
-typing
-upload_photo
-record_video
-upload_video
-record_audio
-upload_audio
-upload_document
-find_location
-record_video_note
-upload_video_note
+typing	for text messages
+upload_photo	for photos
+record_video	for videos
+upload_video	for videos
+record_voice	for voice notes
+upload_voice	for voice notes
+upload_document	for general files
+choose_sticker	for stickers
+find_location	for location data
+record_video_note	for video notes
+upload_video_note	for video notes
 EOL
 }
 
@@ -317,11 +321,20 @@ while true; do
 		poll)
 			api_method="sendPoll"
 			;;
+		checklist)
+			api_method="sendChecklist"
+			;;
 		dice)
 			api_method="sendDice"
 			;;
+		message_draft)
+			api_method="sendMessageDraft"
+			;;
 		chat_action)
 			api_method="sendChatAction"
+			;;
+		gift)
+			api_method="sendGift"
 			;;
 		invoice)
 			api_method="sendInvoice"
@@ -424,6 +437,37 @@ if [ -n "$FILE_PATH" ]; then
 	size=$(stat -c%s "$FILE_PATH")
 	if [ "$size" -gt "52428800" ]; then
 		die "File $FILE_PATH too large, size should not be > 50MB."
+	fi
+	if [ -z "$FILE_TYPE" ]; then
+		ext="${FILE_PATH##*.}"
+		ext_lc=$(printf '%s' "$ext" | tr '[:upper:]' '[:lower:]')
+		case "$ext_lc" in
+			jpg|jpeg|png)
+				FILE_TYPE="photo"
+				;;
+			mp3|m4a)
+				FILE_TYPE="audio"
+				;;
+			pdf|doc|docx|txt|zip|tar|gz|7z|xls|xlsx|ppt|pptx)
+				FILE_TYPE="document"
+				;;
+			mp4)
+				FILE_TYPE="video"
+				;;
+			gif)
+				FILE_TYPE="animation"
+				;;
+			ogg|mp3|m4a)
+				FILE_TYPE="voice"
+				;;
+			mp4|m4v|3gp|3g2)
+				FILE_TYPE="video_note"
+				;;
+			webp|tgs|webm)
+				FILE_TYPE="sticker"
+				;;
+		esac
+		log "Auto-detected file type: $FILE_TYPE (from '$ext_lc' extension)"
 	fi
 	case $FILE_TYPE in
 	photo)

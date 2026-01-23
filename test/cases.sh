@@ -5,13 +5,15 @@ if ! command -v tg &>/dev/null; then
 	TG_CMD="$1"
 	function tg() {
 		local cmd=$(printf '%s %s' "$TG_CMD" "$*")
-		echo "===>>> $@"
+		echo "===== Running: $@"
 		$cmd
 		exitCode=$?
-		echo "<<<=== $exitCode"
+		echo "===== Finished (exit code: $exitCode)"
 		if [ $exitCode != 0 ]; then
 			exit $exitCode
 		fi
+		# to prevent: `Too Many Requests: retry after ...` (can't be <= 1)
+		sleep 2
 	}
 fi
 
@@ -29,6 +31,7 @@ tg -p md <./test/foo.md
 tg -p code <./test/foo.sh
 
 # file
+tg -f ./test/foo.jpg "Should be photo"
 tg -f ./test/foo.jpg -t photo "My photo"
 tg -f ./test/foo.mp3 -t audio "My audio"
 tg -f ./test/foo.md -t document "My document"
