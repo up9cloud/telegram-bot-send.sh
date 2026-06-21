@@ -50,6 +50,13 @@ tg "hello world"
   }
   ```
 
+### Bump the version
+
+- Increment the VERSION variable in the `tg.ash` file
+- Commit your changes
+- Create a git tag in the format vx.x.x for the new version (`git tag vx.x.x`)
+- Push with the tag to GitHub to trigger an automatic release (`git push && git push --tags`)
+
 ## TODO
 
 - [sendMediaGroup](https://core.telegram.org/bots/api#sendmediagroup)

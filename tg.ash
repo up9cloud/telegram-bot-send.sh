@@ -1,5 +1,9 @@
 #!/bin/sh
 
+VERSION=1.1.0
+VERBOSE=false
+DRY_RUN=false
+
 function show_version() {
 	cat <<EOL
 Version: v${VERSION}
@@ -219,9 +223,6 @@ upload_video_note	for video notes
 EOL
 }
 
-VERSION=1.1.0
-VERBOSE=false
-DRY_RUN=false
 if [ -n "$TELEGRAM_BOT_TOKEN" ]; then
 	BOT_TOKEN=$TELEGRAM_BOT_TOKEN
 fi
