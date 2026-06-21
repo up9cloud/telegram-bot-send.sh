@@ -27,8 +27,17 @@ tg "msg by env"
 tg -v "verbose mode"
 tg -T "${TELEGRAM_BOT_TOKEN}" -I "${TELEGRAM_CHAT_ID}" "msg by opt"
 tg --message-thread-id "${TELEGRAM_THREAD_IDS}" "to thread ${TELEGRAM_THREAD_IDS}"
-tg -p md <./test/foo.md
+tg -p MarkdownV2 <./test/sendMessage.MarkdownV2.md
+tg -p HTML <./test/sendMessage.HTML.html
+tg -p md <./test/sendRichMessage.markdown.md
+tg -p html <./test/sendRichMessage.html.html
 tg -p code <./test/foo.sh
+tg -p code --code-id=markdown <./test/foo.md
+tg -p code --code-id=bash <./test/foo.sh
+echo 'code without code-id' | tg -p code
+echo 'code, code-id=code' | tg -p code --code-id=code
+echo 'E = mc^2' | tg -p code --code-id=math
+echo 'E = mc^2' | tg -p code --code-id=math-block
 
 # file
 tg -f ./test/foo.jpg "Should be photo"
@@ -47,9 +56,12 @@ tg -x venue -o latitude=25.033713 -o longitude=121.564928 -o title=101 -o addres
 tg -x contact -o "phone_number=2125802000" -o "first_name=Eva"
 tg -x poll -o "question=Which?" -o "options=$(printf '[]' | jq -c '.[0] |= "a" | .[1] += "b" | tostring')"
 tg -x dice
+# tg -x message_draft -o draft_id=... -o text=...
 tg -x chat_action -o action=typing
+# tg -x gift -o gift_id=...
 # tg -x invoice -o title=Invoice -o description="So cheap!" -o payload=secret -o start_parameter=unique -o currency=USD -o 'prices=[{\"label\":\"Beer\",\"amount\":123}]' -o provider_token=...
 tg -x game -o game_short_name="testgame"
+# tg -x rich_message_draft -o draft_id=... -o rich_message=...
 
 # tg api
 tg --method=getUpdates

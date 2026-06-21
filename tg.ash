@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VERSION=1.1.0
+VERSION=2.0.0
 VERBOSE=false
 DRY_RUN=false
 
@@ -47,11 +47,20 @@ Options:
 	                          sticker: .WEBP, .TGS, or .WEBM sticker (see https://core.telegram.org/bots/api#sendsticker)
 	   --thumb=             Send file's thumb, only works with file type: audio, document, video, animation, video_note
 	   --thumb-id=          Send file's thumb by id existing on telegram server, this will overwrite --thumb.
-	-p,--parse-mode=        Should be one of: (see https://core.telegram.org/bots/api#formatting-options)
-	                          '': Default, not set, plain text
-	                          md: MarkdownV2
-	                          html: HTML
-	                          code: Add '\`\`\`' wrapping message string, and with md mode
+	-p,--parse-mode=        Set message formatting mode. By default, the new Telegram rich message API is used: 
+	                          text(default): send plain text with sendMessage method
+	                          md: Use sendRichMessage with inputRichMessage.markdown
+	                          html: Use sendRichMessage with inputRichMessage.html
+	                          code: Wrap message in '<pre></pre>' and use html mode
+	                        The following options are from https://core.telegram.org/bots/api#formatting-options:
+	                          MarkdownV2: Use sendMessage method with parseMode=MarkdownV2
+	                          HTML: Use sendMessage method with parseMode=HTML
+	   --code-id=           Specify a code language identifier. e.q.:
+	                          -p=code => <pre>...</pre>
+	                          -p=code --code-id=code => <code>...</code>
+	                          -p=code --code-id=math => <tg-math>...</tg-math>
+	                          -p=code --code-id=math-block => <tg-math-block>...</tg-math-block>
+	                          -p=code --code-id=python => <pre><code class="language-python">...</code></pre>
 	-x,--send-method=       Specify other send methods (not message nor file), might need provide more -o argument, should be one of:
 	                          location: -o latitude= -o longitude= (see https://core.telegram.org/bots/api#sendgame)
 	                          venue: -o latitude= -o longitude= -o title= -o address= (see https://core.telegram.org/bots/api#sendvenue)
@@ -229,10 +238,13 @@ fi
 API_BASE_URL="https://api.telegram.org"
 CURL_DEFAULT_ARGS="-s"
 CURL_ARGS=""
+PARSE_MODE="text"
+CODE_ID=""
 
 # https://git.busybox.net/busybox/tree/util-linux/getopt.c
+# https://github.com/vda-linux/busybox_mirror/blob/master/util-linux/getopt.c
 SHORT_OPTSTRING=hVvqnT:I:m:f:t:p:x:o:X:
-LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message-thread-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
+LONG_OPTSTRING=help,version,verbose,quiet,dry-run,bot-token:,chat-id:,message-thread-id:,message:,file:,file-id:,file-type:,thumb:,thumb-id:,parse-mode:,code-id:,send-method:,method:,curl-form:,curl-form-string:,curl-args:,execute:
 GETOPT=$(getopt -o "${SHORT_OPTSTRING}" -l "${LONG_OPTSTRING}" -- "$@") || exit 1
 eval set -- "$GETOPT"
 while true; do
@@ -308,6 +320,10 @@ while true; do
 		PARSE_MODE="$2"
 		shift 2
 		;;
+	--code-id)
+		CODE_ID="$2"
+		shift 2
+		;;
 	-x | --send-method)
 		case $2 in
 		location)
@@ -342,6 +358,9 @@ while true; do
 			;;
 		game)
 			api_method="sendGame"
+			;;
+		rich_message_draft)
+			api_method="sendRichMessageDraft"
 			;;
 		*)
 			die "Invalid send method: ${2}"
@@ -526,27 +545,46 @@ else
 	if [ -z "$MESSAGE" ]; then
 		die "Must provide message."
 	fi
-	api_method="sendMessage"
+	if [ -n "$PARSE_MODE" ]; then
+		case $PARSE_MODE in
+		md)
+			api_method="sendRichMessage"
+			curl_add_form "rich_message=<-"
+			MESSAGE='{"markdown":'"$(printf "%s" "$MESSAGE" | jq -Rs .)""}"
+			;;
+		html)
+			api_method="sendRichMessage"
+			curl_add_form "rich_message=<-"
+			MESSAGE='{"html":'"$(printf "%s" "$MESSAGE" | jq -Rs .)""}"
+			;;
+		code)
+			api_method="sendRichMessage"
+			curl_add_form "rich_message=<-"
+			if [ -z "$CODE_ID" ]; then
+				code_block='<pre>'"$MESSAGE"'</pre>'
+			elif [ "$CODE_ID" = "code" ]; then
+				code_block='<code>'"$MESSAGE"'</code>'
+			elif [ "$CODE_ID" = "math" ]; then
+				code_block='<tg-math>'"$MESSAGE"'</tg-math>'
+			elif [ "$CODE_ID" = "math-block" ]; then
+				code_block='<tg-math-block>'"$MESSAGE"'</tg-math-block>'
+			else
+				code_block='<pre><code class="language-'"$CODE_ID"'">'"$MESSAGE"'</code></pre>'
+			fi
+			MESSAGE='{"html":'"$(printf "%s" "$code_block" | jq -Rs .)""}"
+			;;
+		text)
+			api_method="sendMessage"
+			curl_add_form "text=<-"
+			;;
+		*)
+			api_method="sendMessage"
+			curl_add_form "text=<-"
+			curl_add_form_string "parse_mode=${PARSE_MODE}"
+			;;
+		esac
+	fi
 	log "Use default api method: $api_method"
-	curl_add_form "text=<-"
-fi
-
-if [ -n "$PARSE_MODE" ]; then
-	case $PARSE_MODE in
-	md)
-		curl_add_form_string "parse_mode=MarkdownV2"
-		;;
-	html)
-		curl_add_form_string "parse_mode=HTML"
-		;;
-	code)
-		MESSAGE='```'$'\n'$MESSAGE$'\n''```'
-		curl_add_form_string "parse_mode=MarkdownV2"
-		;;
-	*)
-		curl_add_form_string "parse_mode=${PARSE_MODE}"
-		;;
-	esac
 fi
 
 function send_one() {
