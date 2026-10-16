@@ -39,23 +39,23 @@ tg "hello world"
 
 ## Dev memo
 
-- Setup `./config/telegram.org/config.json`
+### Test
 
-  ```json
-  {
-    "token": "012345678:xxxxxxxxxx",
-    "chat_id": "123456789",
-    "group_id": "-1234567890",
-    "group_thread_ids": [1,2,3]
-  }
-  ```
+`./run_test.sh` runs [test/cases.sh](test/cases.sh) in a plain alpine container and sends real messages, so it needs a bot and a group with topics enabled. Put them in `.config/telegram.org/config.json` (gitignored):
+
+```json
+{
+  "token": "012345678:xxxxxxxxxx",
+  "group_id": "-1234567890",
+  "group_thread_ids": [1, 2, 3]
+}
+```
 
 ### Bump the version
 
 - Increment the VERSION variable in the `tg.ash` file
-- Commit your changes
-- Create a git tag in the format vx.x.x for the new version (`git tag vx.x.x`)
-- Push with the tag to GitHub to trigger an automatic release (`git push && git push --tags`)
+- Commit, tag it `vx.x.x` (`git tag vx.x.x`), then `git push && git push --tags`
+- The tag push creates the [GitHub release](https://github.com/up9cloud/telegram-bot-send.sh/releases) with `tg.ash` attached, then rebuilds [sstc/notify](https://github.com/docker-sstc/mono/tree/master/packages/notify), which bundles the latest release. See [.github/workflows/main.yml](.github/workflows/main.yml)
 
 ## TODO
 

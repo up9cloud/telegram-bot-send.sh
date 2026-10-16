@@ -1,15 +1,14 @@
-#!/bin/bash
+#!/bin/bash -e
 
-TELEGRAM_BOT_TOKEN=$(jq <./.config/telegram.org/config.json -r .token)
-# TELEGRAM_CHAT_ID=$(jq <./.config/telegram.org/config.json -r .chat_id)
-TELEGRAM_GROUP_ID=$(jq <./.config/telegram.org/config.json -r .group_id)
-TELEGRAM_GROUP_THREAD_IDS=$(jq <./.config/telegram.org/config.json -r '.group_thread_ids | join("|")')
+cd "$(dirname "$0")"
+config=./.config/telegram.org/config.json
 
+# Plain alpine, not sstc/notify: proves busybox + curl + jq is enough
 docker run --rm \
-	-v $(pwd):/app \
+	-v "$PWD":/app \
 	-w /app \
-	-e TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN \
-	-e TELEGRAM_CHAT_ID=$TELEGRAM_GROUP_ID \
-	-e TELEGRAM_THREAD_IDS="$TELEGRAM_GROUP_THREAD_IDS" \
-	sstc/notify \
-	sh -c "rm /usr/local/bin/tg && env && ./test/cases.sh ./tg.ash"
+	-e TELEGRAM_BOT_TOKEN="$(jq -r .token $config)" \
+	-e TELEGRAM_CHAT_ID="$(jq -r .group_id $config)" \
+	-e TELEGRAM_THREAD_IDS="$(jq -r '.group_thread_ids | join("|")' $config)" \
+	alpine \
+	sh -c 'apk add -q --no-cache curl jq && ./test/cases.sh ./tg.ash'

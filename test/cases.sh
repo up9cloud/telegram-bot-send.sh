@@ -5,7 +5,7 @@ if ! command -v tg &>/dev/null; then
 	TG_CMD="$1"
 	function tg() {
 		local cmd=$(printf '%s %s' "$TG_CMD" "$*")
-		echo "===== Running: $@"
+		echo "===== Running: $(printf "%s" "$*" | sed "s#${TELEGRAM_BOT_TOKEN}#<token>#g")"
 		$cmd
 		exitCode=$?
 		echo "===== Finished (exit code: $exitCode)"
